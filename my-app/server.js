@@ -40,7 +40,7 @@ function isAdmin(request, response, next) {
       next()
     } else {
       // 403 Forbidden – client authenticated but does not have permission to access the requested resource
-      response.status(403).json({ success: false, msg: "Aautherror: client authenticated but does not have permission to access the requested resource" })
+      response.status(403).json({ success: false, msg: "Autherror: client authenticated but does not have permission to access the requested resource" })
     }
   } catch (err) {
     response.status(401).json({ success: false, msg: "Autherror: You are not signed in." })
@@ -48,6 +48,20 @@ function isAdmin(request, response, next) {
   }
 }
 
+function isTeacher(request, response, next) {
+  try {
+    let userDecoded = jwt.verify(request.cookies.token, SECRET_KEY)
+    if (userDecoded.role === "teacher") {
+      next()
+    } else {
+      // 403 Forbidden – client authenticated but does not have permission to access the requested resource
+      response.status(403).json({ success: false, msg: "Autherror: client authenticated but does not have permission to access the requested resource" })
+    }
+  } catch (err) {
+    response.status(401).json({ success: false, msg: "Autherror: You are not signed in." })
+
+  }
+}
 
 app.get('/', function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
@@ -59,6 +73,9 @@ app.get('/api/admin', isAdmin, function (request, response) {
 
 app.get('/api/anybody', function (request, response) {
   response.json({ msg: "Anybody resource returned (not protected)" })
+});
+app.get('/api/teacher', isTeacher, function (request, response) {
+  response.json({ msg: "Teacher resource returned" })
 });
 
 app.post("/login", (req, res) => {
@@ -85,6 +102,6 @@ app.post("/login", (req, res) => {
     });
     res.end();
   } else {
-    res.json({ msg: "You DID NOT authenticatex", statusCode: 0 });
+    res.json({ msg: "You DID NOT authenticate!", statusCode: 0 });
   }
 });
